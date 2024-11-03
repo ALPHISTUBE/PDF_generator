@@ -5,37 +5,76 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
         }
-        h1 {
+        h1, h2, h3 {
             color: #333;
         }
         p {
             font-size: 14px;
         }
+        .header, .footer {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .header img {
+            width: 150px;
+            height: auto;
+        }
+        .content {
+            margin-top: 30px;
+        }
+        .content h3 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+        .content p {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #333;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
-    <h1>Sample PDF Document</h1>
-    <p>This is a sample PDF document generated using pdfkit in Python.</p>
-    <div style="text-align: center; margin-top: 20px;">
-        <img src="https://via.placeholder.com/150" alt="Company Logo" style="width: 150px; height: auto;">
+    <div class="header">
+        <img src="" alt="Company Logo">
         <h2>Company Name</h2>
     </div>
-    <div style="margin-top: 30px;">
+    <h1>Sample PDF Document</h1>
+    <p>This is a sample PDF document generated using pdfkit in Python.</p>
+    <div class="content">
         <h3>Business Data</h3>
         <p><strong>Personal Income:</strong> $50,000</p>
         <p><strong>Expenses:</strong> $20,000</p>
         <p><strong>Loan:</strong> $10,000</p>
+        <p><strong>Net Profit:</strong> $20,000</p>
+        <p><strong>Tax:</strong> $5,000</p>
     </div>
-    <div style="margin-top: 30px;">
+    <div class="content">
         <h3>Transaction Table</h3>
-        <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+        <table>
             <thead>
                 <tr>
                     <th>From</th>
                     <th>To</th>
                     <th>Transaction Type</th>
                     <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,27 +83,38 @@
                     <td>Account B</td>
                     <td>Credit</td>
                     <td>$1,000</td>
+                    <td>2023-01-01</td>
+                    <td>Completed</td>
                 </tr>
                 <tr>
                     <td>Account C</td>
                     <td>Account D</td>
                     <td>Debit</td>
                     <td>$500</td>
+                    <td>2023-02-15</td>
+                    <td>Pending</td>
                 </tr>
                 <tr>
                     <td>Account E</td>
                     <td>Account F</td>
                     <td>Credit</td>
                     <td>$2,000</td>
+                    <td>2023-03-10</td>
+                    <td>Completed</td>
                 </tr>
                 <tr>
                     <td>Account G</td>
                     <td>Account H</td>
                     <td>Debit</td>
                     <td>$750</td>
+                    <td>2023-04-05</td>
+                    <td>Failed</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+    <div class="footer">
+        <p>Generated on: 2023-10-01</p>
     </div>
 </body>
 </html>
