@@ -9,6 +9,7 @@ import dollar from '../../../public/image/expenses/dollar.png'
 import BookOpen from '../../../public/svg/BookOpen'
 import Link from 'next/link'
 
+
 const ExpenseRecord = () => {
 return (
     <div className='bg-white h-screen'>
@@ -25,7 +26,7 @@ return (
                 </div>
         </div>
         <div className='flex flex-col items-center text-black mt-36'>
-            <Image className="w-auto h-auto" src={dollar}/>
+            <Image className="w-auto h-auto" src={dollar} alt='dollar_icon'/>
             <h1 className='card-title'>No Record Yet</h1>
             <p className='text-[#505050]' >You can awls change future</p>
         </div>
@@ -34,7 +35,7 @@ return (
                 <Link className="card card-compact bg-white border-2 border-[#b8b8b8] w-96 mx-5" href="/">
                     <div>
                         <div className="card-body flex flex-col items-center text-[#4d4d4d]">
-                            <Image className="mt-1" src={dollar}/>
+                            <Image className="mt-1" src={dollar} alt='Dollar_icon'/>
                             <div className='flex flex-col items-center text-center'>
                                 <p className="text-base font-bold mb-3 text-[#2c2c2c]">Create Expense Record</p>
                                 <p className='mx-5 mb-2'>Import transaction details from a CSV format</p>
@@ -45,7 +46,7 @@ return (
                 <Link className="card card-compact bg-white border-2 border-[#b8b8b8] w-96 mx-5" href="/">
                     <div>
                         <div className="card-body flex flex-col items-center text-[#4d4d4d]">
-                            <Image className="mt-1" src={dollar}/>
+                            <Image className="mt-1" src={dollar} alt='dt'/>
                             <div className='flex flex-col items-center text-center'>
                                 <p className="text-base font-bold mb-3 text-[#2c2c2c]">Create Bill Record</p>
                                 <p className='mx-5 mb-2'>Enter manual transaction Income or Expense</p>
@@ -56,7 +57,7 @@ return (
                 <Link className="card card-compact bg-white border-2 border-[#b8b8b8] w-96 mx-5" href="/">
                     <div>
                         <div className="card-body flex flex-col items-center text-[#4d4d4d]">
-                            <Image className="mt-1" src={dollar}/>
+                            <Image className="mt-1" src={dollar} alt='dt'/>
                             <div className='flex flex-col items-center text-center'>
                                 <p className="text-base font-bold mb-3 text-[#2c2c2c]">Scan Receipt</p>
                                 <p className='mx-5 mb-2'>Scan Receipt with app or Upload a receipt</p>
