@@ -84,11 +84,11 @@ const Home = () => {
     const [paidStatus, setPaidStatus] = useState([
         {
             id: 1,
-            name: 'Paid'
+            name: 'PAID'
         },
         {
             id: 2,
-            name: 'Due'
+            name: 'DUE'
         }
     ])
 
@@ -139,11 +139,12 @@ const Home = () => {
                                     placeholder='Enter Report Name'
                                 />
                             </label>
-                            <label className='mb-2'>
-                                Date
+                            <label className='mb-2' htmlFor='date'>
+                                <p>Date</p>
                                 <input 
                                     type="date" 
-                                    name="date" 
+                                    name="date"
+                                    id='date'
                                     value={formData.date} 
                                     onChange={handleChange} 
                                     className='input input-bordered w-full bg-white border-slate-300 mt-2 date:text-black'
@@ -267,7 +268,7 @@ const Home = () => {
                     </form>
                 </dialog>
                 <div className='border-2 border-stone-300 rounded-tl-xl rounded-tr-xl mt-4'>
-                    <table className="table w-full">
+                    <table className="table w-full text-left">
                         <thead className='bg-slate-100'>
                             <tr className='text-stone-500 border-stone-300'>
                                 <th className='rounded-tl-xl'>Date</th>
@@ -275,7 +276,7 @@ const Home = () => {
                                 <th>Merchant</th>
                                 <th>Category</th>
                                 <th>Status</th>
-                                <th>Way</th>
+                                <th>Method</th>
                                 <th className='rounded-tr-xl'>Amount</th>
                             </tr>
                         </thead>
@@ -286,7 +287,11 @@ const Home = () => {
                                     <td>{transaction.report_name}</td>
                                     <td>{transaction.merchant}</td>
                                     <td>{transaction.category}</td>
-                                    <td>{transaction.status}</td>
+                                    <td className=''>
+                                        <div className={`w-[50%] rounded-xl ${transaction.status === 'DUE' ? 'bg-[#f55]' : 'bg-green-500'} text-white font-bold text-center shadow-md`}>
+                                            {transaction.status}
+                                        </div>
+                                    </td>
                                     <td>{transaction.way}</td>
                                     <td>{transaction.amount}</td>
                                 </tr>
