@@ -4,12 +4,11 @@ import os
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from google.oauth2 import Credentials
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from pydantic import BaseModel
 from typing import List
 import base64
-from models import Transaction
+from models import Transaction, TokenData
 from sms_2_transaction import SMS, is_transactional, get_transaction_info, flow
 
 
@@ -97,36 +96,43 @@ async def detect_sms(sms: SMS):
         return {"status": "non-transaction", "message": "This is not a transactional SMS"}
 
 @app.get("/auth/google")
-async def google_login():
-    authorization_url, state = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true"
-    )
+async def auth_google():
+    authorization_url, _ = flow.authorization_url(prompt="consent")
     return RedirectResponse(authorization_url)
-    
+
 @app.get("/auth/google/callback")
-async def google_callback(request: Request):
+async def auth_google_callback(request: Request):
     flow.fetch_token(authorization_response=str(request.url))
     credentials = flow.credentials
-    request.state.credentials = credentials_to_dict(credentials)
-    return RedirectResponse(url="/fetch-emails")
 
-def credentials_to_dict(credentials):
-    return {
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-    }
+    token_data = TokenData(
+        access_token=credentials.token,
+        refresh_token=credentials.refresh_token,
+        token_type=credentials.token_uri,
+        expires_in=credentials.expiry,
+        scope=" ".join(credentials.scopes),
+    )
+
+    return token_data
 
 @app.get("/fetch-emails")
 async def fetch_emails(request: Request):
     if not request.state.credentials:
         raise HTTPException(status_code=401, detail="User not authenticated")
-    
-    credentials = Credentials(**request.state.credentials)
+
+    token_data = TokenData(**request.state.credentials)
+
+    credentials = Credentials(
+        token=token_data.token,
+        refresh_token=token_data.refresh_token,
+        token_uri=token_data.token_uri,
+        client_id=token_data.client_id,
+        client_secret=token_data.client_secret,
+        scopes=token_data.scopes
+    )
+
     service = build("gmail", "v1", credentials=credentials)
+
     results = service.users().messages().list(userId="me", labelIds=["INBOX"], maxResults=5).execute()
     messages = results.get("messages", [])
 

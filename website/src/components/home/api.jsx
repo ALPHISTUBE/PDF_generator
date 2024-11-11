@@ -1,3 +1,23 @@
+import axios from 'axios';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.status(405).json({ message: "Method not allowed" });
+    return;
+  }
+
+  try {
+    const response = await axios.get("http://localhost:4001/fetch-emails", {
+      withCredentials: true,
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Error fetching emails:", error);
+    res.status(500).json({ message: "Error fetching emails" });
+  }
+}
+
+
 const base64toBlob = (base64, mime) => {
     const byteCharacters = atob(base64);
     const byteNumbers = new Array(byteCharacters.length);

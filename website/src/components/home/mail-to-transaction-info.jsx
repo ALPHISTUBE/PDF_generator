@@ -1,0 +1,66 @@
+'use client'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+export default function Mail_To_Transaction_Info() {
+  const [emails, setEmails] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Start Google OAuth login flow
+  const handleLogin = async () => {
+    try {
+      const response = await axios.get("http://localhost:4001/auth/google", {
+        withCredentials: true,
+      });
+      // Redirect to Google's OAuth page
+      window.location.href = response.request.responseURL;
+    } catch (error) {
+      console.error("Error initiating login:", error);
+    }
+  };
+
+  // Fetch Gmail data after authentication
+  const fetchEmails = async () => {
+    try {
+      const response = await axios.get("http://localhost:4001/fetch-emails", {
+        withCredentials: true,
+      });
+      setEmails(response.data.emails);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+    }
+  };
+
+  // Automatically fetch emails on component mount if already authenticated
+  useEffect(() => {
+    fetchEmails();
+  }, []);
+
+return (
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold mb-8">Email Dashboard</h1>
+        {!isAuthenticated ? (
+            <button
+                onClick={handleLogin}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
+            >
+                Login with Google
+            </button>
+        ) : (
+            <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-semibold mb-4">Recent Emails</h2>
+                {emails.length > 0 ? (
+                    emails.map((email) => (
+                        <div key={email.id} className="border-b border-gray-200 py-4">
+                            <p className="text-gray-700">{email.snippet}</p>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-gray-500">No emails found.</p>
+                )}
+            </div>
+        )}
+    </div>
+);
+}
