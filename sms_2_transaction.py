@@ -3,8 +3,8 @@ from typing import List
 from dotenv import load_dotenv
 import os
 from models import SMS
-load_dotenv()
 from google_auth_oauthlib.flow import Flow
+load_dotenv()
 
 country_currency_codes = sorted([
     "AFN", "ALL", "DZD", "AOA", "ARS", "AMD", "AWG", "AUD", "AZN", "BSD", "BHD", "BDT", "BBD", "BYN", "BZD", "BMD", 
@@ -174,10 +174,10 @@ def get_type(keyword : str, type):
             return key
     return type
 
-CLIENT_ID = os.environ("CLIENT_ID")
-CLIENT_SECRET = os.environ("CLIENT_SECRET")
-REDIRECT_URI = os.environ("REDIRECT_URI")
-SCOPES = os.environ("SCOPES")
+CLIENT_ID = os.environ["CLIENT_ID"]
+CLIENT_SECRET = os.environ["CLIENT_SECRET"]
+REDIRECT_URI = os.environ["REDIRECT_URI"]
+SCOPES = os.environ["SCOPES"]
 
 flow = Flow.from_client_config(
     {
