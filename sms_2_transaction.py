@@ -1,15 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel
-import imaplib
-import email
-from email.header import decode_header
+from typing import List
 from dotenv import load_dotenv
 import os
-from typing import List
+from models import SMS
 load_dotenv()
-
-class SMS(BaseModel):
-    message: str
 
 
 country_currency_codes = sorted([
@@ -56,7 +50,6 @@ def is_transactional(message: str) -> bool:
             return True
     return False
 
-# Simple function to detect if the SMS is transactional
 def get_transaction_info(message: str) -> bool:
     currency = None
     amount = None
@@ -157,7 +150,6 @@ def get_balance(keywords: List[str], i: int, currency : str, balance) -> str:
             continue
     return balance
 
-
 def get_amount(keywords: List[str], i: int, amount) -> str:
     for j in range(i-3, i):
         try:
@@ -182,55 +174,21 @@ def get_type(keyword : str, type):
             return key
     return type
 
-# Your email credentials
-EMAIL = os.environ.get("EMAIL")
-PASSWORD = os.environ.get("PASSWORD")
+CLIENT_ID = os.environ("CLIENT_ID")
+CLIENT_SECRET = os.environ("CLIENT_SECRET")
+REDIRECT_URI = os.environ("REDIRECT_URI")
+SCOPES = os.environ("SCOPES")
 
-def read_latest_email():
-    try:
-        # Connect to Gmail's IMAP server
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
-        mail.login(EMAIL, PASSWORD)
-
-        # Select the mailbox (in this case, the inbox)
-        mail.select("inbox")
-
-        # Search for all messages in the inbox
-        status, messages = mail.search(None, "ALL")
-
-        # Get the latest email
-        email_ids = messages[0].split()
-        latest_email_id = email_ids[-1]
-
-        # Fetch the email by ID
-        status, msg_data = mail.fetch(latest_email_id, "(RFC822)")
-
-        # Parse the email
-        for response_part in msg_data:
-            if isinstance(response_part, tuple):
-                msg = email.message_from_bytes(response_part[1])
-                subject, encoding = decode_header(msg["Subject"])[0]
-                if isinstance(subject, bytes):
-                    subject = subject.decode(encoding if encoding else "utf-8")
-                from_ = msg.get("From")
-
-                # Get the email body
-                if msg.is_multipart():
-                    for part in msg.walk():
-                        content_type = part.get_content_type()
-                        content_disposition = str(part.get("Content-Disposition"))
-
-                        if "attachment" not in content_disposition:
-                            body = part.get_payload(decode=True).decode()
-                            break
-                else:
-                    body = msg.get_payload(decode=True).decode()
-
-                return {
-                    "subject": subject,
-                    "from": from_,
-                    "body": body
-                }
-
-    except Exception as e:
-        return {"error": str(e)}
+flow = Flow.from_client_config(
+    {
+        "web": {
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "redirect_uris": [REDIRECT_URI],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    },
+    scopes=SCOPES,
+    redirect_uri=REDIRECT_URI,
+)
