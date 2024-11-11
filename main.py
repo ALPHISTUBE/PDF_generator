@@ -17,10 +17,10 @@ html_file_path = os.path.abspath('pdf_format/index.html')
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Only allow your frontend origin
+    allow_credentials=True,  # Allow credentials like cookies
+    allow_methods=["GET", "POST"],  # Adjust methods if needed
+    allow_headers=["*"],  # Allow all headers
 )
 
 @app.post("/generate-pdf/")
@@ -95,9 +95,11 @@ async def detect_sms(sms: SMS):
     else:
         return {"status": "non-transaction", "message": "This is not a transactional SMS"}
 
-@app.get("/auth/google")
+@app.get("/auth/google/")
 async def auth_google():
-    authorization_url, _ = flow.authorization_url(prompt="consent")
+    authorization_url, state = flow.authorization_url(
+        access_type="offline", prompt="consent"
+    )
     return RedirectResponse(authorization_url)
 
 @app.get("/auth/google/callback")
@@ -117,10 +119,13 @@ async def auth_google_callback(request: Request):
 
 @app.get("/fetch-emails")
 async def fetch_emails(request: Request):
-    if not request.state.credentials:
+    if not hasattr(request.state, 'credentials') or not request.state.credentials:
         raise HTTPException(status_code=401, detail="User not authenticated")
 
-    token_data = TokenData(**request.state.credentials)
+    # Logging for debugging
+    print("Credentials received:", request.state.credentials)
+
+    token_data = TokenData(**request.state.credentials)  # Make sure TokenData is properly defined
 
     credentials = Credentials(
         token=token_data.token,
@@ -131,20 +136,30 @@ async def fetch_emails(request: Request):
         scopes=token_data.scopes
     )
 
-    service = build("gmail", "v1", credentials=credentials)
+    # Verify the Gmail API service
+    try:
+        service = build("gmail", "v1", credentials=credentials)
+    except Exception as e:
+        print("Error building Gmail service:", e)
+        raise HTTPException(status_code=500, detail="Failed to initialize Gmail service")
 
-    results = service.users().messages().list(userId="me", labelIds=["INBOX"], maxResults=5).execute()
-    messages = results.get("messages", [])
+    # Fetching emails
+    try:
+        results = service.users().messages().list(userId="me", labelIds=["INBOX"], maxResults=5).execute()
+        messages = results.get("messages", [])
 
-    email_data = []
-    for message in messages:
-        msg = service.users().messages().get(userId="me", id=message["id"]).execute()
-        email_data.append({
-            "id": msg["id"],
-            "snippet": msg["snippet"],
-        })
+        email_data = []
+        for message in messages:
+            msg = service.users().messages().get(userId="me", id=message["id"]).execute()
+            email_data.append({
+                "id": msg["id"],
+                "snippet": msg["snippet"],
+            })
 
-    return JSONResponse(content={"emails": email_data})
+        return JSONResponse(content={"emails": email_data})
+    except Exception as e:
+        print("Error fetching emails:", e)
+        raise HTTPException(status_code=500, detail="Failed to fetch emails")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=4001)

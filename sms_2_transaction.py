@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 from models import SMS
 from google_auth_oauthlib.flow import Flow
-load_dotenv()
+load_dotenv(dotenv_path='.env')
 
 country_currency_codes = sorted([
     "AFN", "ALL", "DZD", "AOA", "ARS", "AMD", "AWG", "AUD", "AZN", "BSD", "BHD", "BDT", "BBD", "BYN", "BZD", "BMD", 

@@ -9,28 +9,25 @@ export default function Mail_To_Transaction_Info() {
   // Start Google OAuth login flow
   const handleLogin = async () => {
     try {
-      const response = await axios.get("http://localhost:4001/auth/google", {
-        withCredentials: true,
-      });
-      // Redirect to Google's OAuth page
-      window.location.href = response.request.responseURL;
+    window.location.href = 'http://localhost:4001/auth/google';
     } catch (error) {
       console.error("Error initiating login:", error);
     }
   };
 
-  // Fetch Gmail data after authentication
-  const fetchEmails = async () => {
+// Fetch Gmail data after authentication
+const fetchEmails = async () => {
     try {
-      const response = await axios.get("http://localhost:4001/fetch-emails", {
-        withCredentials: true,
-      });
-      setEmails(response.data.emails);
-      setIsAuthenticated(true);
+        const response = await axios.get("http://localhost:4001/fetch-emails", {
+            withCredentials: true,
+        });
+        console.log(response);
+        setEmails(response.data.emails);
+        setIsAuthenticated(true);
     } catch (error) {
-      console.error("Error fetching emails:", error);
+        console.error("Error fetching emails:", error);
     }
-  };
+};
 
   // Automatically fetch emails on component mount if already authenticated
   useEffect(() => {

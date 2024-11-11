@@ -1,20 +1,31 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.status(405).json({ message: "Method not allowed" });
-    return;
-  }
+    if (req.method !== 'GET') {
+        res.status(405).json({ message: "Method not allowed" });
+        return;
+    }
 
-  try {
-    const response = await axios.get("http://localhost:4001/fetch-emails", {
-      withCredentials: true,
-    });
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error("Error fetching emails:", error);
-    res.status(500).json({ message: "Error fetching emails" });
-  }
+    try {
+        const response = await axios.get("http://localhost:4001/fetch-emails", {
+            withCredentials: true
+        });
+        res.status(200).json(response.data);
+    } catch (error) {
+        if (error.response) {
+            // Errors from the server
+            console.error("Server error:", error.response.data);
+            res.status(error.response.status).json({ message: error.response.data.detail });
+        } else if (error.request) {
+            // No response from server
+            console.error("No response from server:", error.request);
+            res.status(500).json({ message: "No response from server" });
+        } else {
+            // Axios config errors
+            console.error("Axios error:", error.message);
+            res.status(500).json({ message: "Error fetching emails" });
+        }
+    }
 }
 
 
