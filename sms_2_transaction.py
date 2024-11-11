@@ -42,6 +42,13 @@ banks = {
     "BDT": ["DBBL", "BRAC", "EBL", "UCBL", "MTBL", "IFIC", "NBL", "SIBL", "EXIM", "SJIBL", "MBL", "PBL", "RBL", "SBL", "TBL", "UBL"]
 }
 
+types = {
+    'Income' : ['debit', 'deposit', 'payment', 'insurance', 'premium'],
+    'Expense' : ['credited', 'withdrawn', 'charge', 'bill', 'transfer'],
+    'Asset' : ['purchase', 'order'],
+    'Liability' : ['confirmation', 'receipt', 'invoice', 'loan', 'repayment']
+}
+
 def is_transactional(message: str) -> bool:
     message_lower = message.lower()
     for keyword in transactional_keywords:
@@ -84,7 +91,7 @@ def get_transaction_info(message: str) -> bool:
         message_lower = message_lower.replace(old, new)
     keywords = message_lower.split(" ")
     print(keywords)
-    serial_search = ['AC','balance', currency.lower(), 'date', 'time', 'bank']
+    serial_search = ['AC','balance', currency.lower(), 'date', 'time', 'bank', 'type']
     for search in serial_search:
         for i in range(len(keywords)):
             if keywords[i] == 'ac':
@@ -99,6 +106,8 @@ def get_transaction_info(message: str) -> bool:
                 balance = get_balance(keywords, i, currency.lower(), balance)
             elif search == 'bank':
                 bank = next((b for b in banks.get(currency, []) if b.lower() in message_lower), None)
+            elif search == 'type':
+                type = get_type(keywords[i], type)
     return {
         "date" : f"{date} {time}",
         "ac": ac,
@@ -150,26 +159,28 @@ def get_balance(keywords: List[str], i: int, currency : str, balance) -> str:
 
 
 def get_amount(keywords: List[str], i: int, amount) -> str:
-    print(keywords[i])
     for j in range(i-3, i):
         try:
             if j >= 0:
-                print(j)
                 amount = float(keywords[j])
-                print(amount)
                 return amount
         except ValueError:
             continue
     for j in range(i+1, i+4):
         try:
             if j <= len(keywords) - 1:
-                print("f",j)
                 amount = float(keywords[j])
-                print(amount)
                 return amount
         except ValueError:
             continue
     return amount
+
+def get_type(keyword : str, type):
+    print(keyword)
+    for key, keywords in types.items():
+        if keyword in keywords:
+            return key
+    return type
 
 # Your email credentials
 EMAIL = os.environ.get("EMAIL")

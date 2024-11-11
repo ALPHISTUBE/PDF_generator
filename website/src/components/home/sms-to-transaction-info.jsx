@@ -25,45 +25,41 @@ const SmsToTransactionInfo = () => {
     }
 
     return (
-        <div className="p-4 mx-auto bg-white shadow-md rounded-lg min-h-screen">
-            <div className='flex'>
+        <div className="p-6 mx-auto bg-white shadow-lg rounded-lg min-h-screen max-w-4xl">
+            <div className='flex flex-col md:flex-row gap-4 mb-6'>
                 <textarea 
-                    className="w-full p-2 border border-gray-300 rounded-md mb-4" 
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
                     value={sms} 
                     onChange={(e) => setSms(e.target.value)} 
                     placeholder="Enter SMS here" 
                 />
                 <button 
-                    className="w-full bg-blue-500 text-white p-2 rounded-md mb-4 hover:bg-blue-600" 
+                    className="w-full md:w-auto bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 transition-colors" 
                     onClick={fetchTransactions}
                 >
                     Fetch Transaction Info
                 </button>
             </div>
-            <table className="bg-gray-100 p-4 rounded-md text-black w-full">
+            <table className="bg-gray-50 p-4 rounded-md text-black w-full shadow-sm">
                 <tbody>
-                        <tr className='grid grid-cols-2 bg-stone-500 text-white'>
-                            <td className="font-bold text-center">Info</td>
-                            <td>
-                                <div className={`p-2 text-center`}>
-                                    Value
-                                </div>
-                            </td>
-                        </tr>
+                    <tr className='grid grid-cols-2 bg-blue-500 text-white'>
+                        <td className="font-bold text-center py-2">Info</td>
+                        <td className="font-bold text-center py-2">Value</td>
+                    </tr>
                     {Object.entries(transactionInfo.data).map(([key, value]) => (
                         <tr key={key} className='grid grid-cols-2'>
-                            <td className="font-bold text-center">{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
-                            <td>
-                                <p className={`text-center rounded-md ${value ? 'bg-green-200' : 'bg-red-200'}`}>
+                            <td className="font-semibold text-center py-2">{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
+                            <td className="text-center py-2">
+                                <span className={`inline-block px-2 py-1 rounded-md ${value ? 'bg-green-200' : 'bg-red-200'}`}>
                                     {value !== null && value !== "" ? value : 'N/A'}
-                                </p>
+                                </span>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
             {transactionInfo.message && (
-                <div className="mt-4 p-2 bg-yellow-200 text-yellow-800 rounded-md">
+                <div className="mt-4 p-3 bg-yellow-200 text-yellow-800 rounded-md">
                     {transactionInfo.message}
                 </div>
             )}
