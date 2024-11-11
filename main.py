@@ -5,7 +5,6 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.oauth2 import Credentials
-from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from pydantic import BaseModel
 from typing import List
