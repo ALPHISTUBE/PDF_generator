@@ -174,21 +174,21 @@ def get_type(keyword : str, type):
             return key
     return type
 
-CLIENT_ID = os.environ["CLIENT_ID"]
-CLIENT_SECRET = os.environ["CLIENT_SECRET"]
-REDIRECT_URI = os.environ["REDIRECT_URI"]
-SCOPES = os.environ["SCOPES"]
+client_id = os.environ["CLIENT_ID"]
+client_secret = os.environ["CLIENT_SECRET"]
+redirect_url = os.environ["REDIRECT_URI"]
+scope = os.environ["SCOPES"]
 
 flow = Flow.from_client_config(
     {
         "web": {
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-            "redirect_uris": [REDIRECT_URI],
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "redirect_uris": [redirect_url],
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
         }
     },
-    scopes=SCOPES,
-    redirect_uri=REDIRECT_URI,
+    scopes=scope,
+    redirect_uri=redirect_url,
 )
