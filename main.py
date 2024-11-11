@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import base64
+from sms_2_transaction import SMS, is_transactional, read_latest_email, get_transaction_info
 
 # Path to the HTML file
 html_file_path = os.path.abspath('pdf_format/index.html')
@@ -101,5 +102,18 @@ def generate_pdf(transactions: List[Transaction]):
 
     return {"pdf_base64": pdf_base64}
 
+@app.post("/detect-sms/")
+async def detect_sms(sms: SMS):
+    # Detect whether the SMS is transactional or not
+    if is_transactional(sms.message):
+        return {"data": get_transaction_info(sms.message), "message": "This is a transactional SMS"}
+    else:
+        return {"status": "non-transaction", "message": "This is not a transactional SMS"}
+
+@app.get("/read-latest-email")
+async def get_latest_email():
+    email_data = read_latest_email()
+    return email_data
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=4000)
+    uvicorn.run(app, host="0.0.0.0", port=4001)

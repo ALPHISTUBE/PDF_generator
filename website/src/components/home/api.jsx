@@ -10,7 +10,7 @@ const base64toBlob = (base64, mime) => {
 
 export const saveTransaction = async (transactions) => {
     try {
-        const response = await fetch('http://localhost:4000/generate-pdf/', {
+        const response = await fetch('http://localhost:4001/generate-pdf/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -25,6 +25,22 @@ export const saveTransaction = async (transactions) => {
         const pdfBlob = base64toBlob(pdfBase64, 'application/pdf');
         const pdfUrl = URL.createObjectURL(pdfBlob);
         return pdfUrl;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error)
+    }
+}
+
+export const getTransactionFromSMS = async (sms) => {
+    try{
+        const response = await fetch('http://localhost:4001/detect-sms/', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body : JSON.stringify({'message' : sms})
+        })
+        const data = await response.json();
+        return data;
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error)
     }

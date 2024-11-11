@@ -1,3 +1,4 @@
 {
-  "/home/page": "app/home/page.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/sms-to-transaction-info/page": "app/sms-to-transaction-info/page.js"
 }
