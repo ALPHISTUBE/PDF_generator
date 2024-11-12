@@ -1,30 +1,49 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
-export default async function handler(req, res) {
-    if (req.method !== 'GET') {
-        res.status(405).json({ message: "Method not allowed" });
-        return;
+export async function GetUserInfo (){
+    // Read the tokens from client-side cookies using js-cookie
+    const accessToken = Cookies.get('access_token');
+    const refreshToken = Cookies.get('refresh_token');
+    const tokenType = Cookies.get('token_type');
+    const expiresIn = Cookies.get('expires_in');
+    const scope = Cookies.get('scope');
+    console.log("Access token:", accessToken);
+
+    // Create a JSON object with the token information
+    const tokenInfo = {
+        accessToken,
+        refreshToken,
+        tokenType,
+        expiresIn,
+        scope
+    };
+
+    return tokenInfo;
+};
+
+export async function fetchEmailAxios() {
+    let user = await GetUserInfo(); // Get token from cookies
+
+    if (!user.accessToken) {
+        throw new Error("User not authenticated"); // No token, user is not authenticated
     }
 
     try {
-        const response = await axios.get("http://localhost:4001/fetch-emails", {
-            withCredentials: true
+        // Fetch emails with the token included in the request body
+        let response = await axios.post("http://localhost:4001/fetch-emails", user, {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true // Ensure credentials are included for authentication
         });
-        res.status(200).json(response.data);
+
+        const data = response.data;
+        console.log("Response:", data);
+        return data;
     } catch (error) {
-        if (error.response) {
-            // Errors from the server
-            console.error("Server error:", error.response.data);
-            res.status(error.response.status).json({ message: error.response.data.detail });
-        } else if (error.request) {
-            // No response from server
-            console.error("No response from server:", error.request);
-            res.status(500).json({ message: "No response from server" });
-        } else {
-            // Axios config errors
-            console.error("Axios error:", error.message);
-            res.status(500).json({ message: "Error fetching emails" });
-        }
+        console.error("Error:", error);
+        throw new Error("Error fetching emails");
     }
 }
 

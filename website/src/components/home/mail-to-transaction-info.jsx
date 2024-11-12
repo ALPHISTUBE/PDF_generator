@@ -1,63 +1,67 @@
 'use client'
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { GetUserInfo, fetchEmailAxios } from './api';
+import Cookies from 'js-cookie';
 
 export default function Mail_To_Transaction_Info() {
-  const [emails, setEmails] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [emails, setEmails] = useState({});
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Start Google OAuth login flow
-  const handleLogin = async () => {
-    try {
-    window.location.href = 'http://localhost:4001/auth/google';
-    } catch (error) {
-      console.error("Error initiating login:", error);
-    }
-  };
+    const handleLogin = async () => {
+        try {
+            window.location.href = 'http://localhost:4001/auth/google';
+        } catch (error) {
+            console.error("Error initiating login:", error);
+        }
+    };
 
-// Fetch Gmail data after authentication
-const fetchEmails = async () => {
-    try {
-        const response = await axios.get("http://localhost:4001/fetch-emails", {
-            withCredentials: true,
-        });
-        console.log(response);
-        setEmails(response.data.emails);
-        setIsAuthenticated(true);
-    } catch (error) {
-        console.error("Error fetching emails:", error);
-    }
-};
+    const fetchEmails = async () => {
+        try {
+            console.log("Fetching emails...");
+            const response = await fetchEmailAxios();
+            setEmails(response.emails);
+            console.log("Response:", emails);
+        } catch (error) {
+            console.error("Error fetching emails:", error);
+        }
+    };
 
-  // Automatically fetch emails on component mount if already authenticated
-  useEffect(() => {
-    fetchEmails();
-  }, []);
+    useEffect(() => {
+        const token = Cookies.get('access_token');
+        if (token){
+            setIsAuthenticated(true);
+            console.log("User authenticated", isAuthenticated);
+        }
+        // Only fetch emails if the user is authenticated
+        if (token) {
+            fetchEmails();
+        }
+    }, []);
 
-return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold mb-8">Email Dashboard</h1>
-        {!isAuthenticated ? (
-            <button
-                onClick={handleLogin}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
-            >
-                Login with Google
-            </button>
-        ) : (
-            <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-semibold mb-4">Recent Emails</h2>
-                {emails.length > 0 ? (
-                    emails.map((email) => (
-                        <div key={email.id} className="border-b border-gray-200 py-4">
-                            <p className="text-gray-700">{email.snippet}</p>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500">No emails found.</p>
-                )}
-            </div>
-        )}
-    </div>
-);
+    return (
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+            <h1 className="text-4xl font-bold mb-8">Email Dashboard</h1>
+            {!isAuthenticated ? (
+                <button
+                    onClick={handleLogin}
+                    className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
+                >
+                    Login with Google
+                </button>
+            ) : (
+                <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
+                    <h2 className="text-2xl font-semibold mb-4">Recent Emails</h2>
+                    {emails.length > 0 ? (
+                        emails.map((email) => (
+                            <div key={email.id} className="border-b border-gray-200 py-4">
+                                <p className="text-gray-700">{email.snippet}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">No emails found.</p>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 }

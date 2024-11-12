@@ -1,16 +1,20 @@
 import uvicorn
 import pdfkit
 import os
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException, Request, Cookie
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from google.auth.transport.requests import Request as GoogleRequest
+import google
 from typing import List
 import base64
 from models import Transaction, TokenData
 from sms_2_transaction import SMS, is_transactional, get_transaction_info
 from google_auth_oauthlib.flow import Flow
+import ast
+import json
 
 
 html_file_path = os.path.abspath('pdf_format/index.html')
@@ -111,44 +115,72 @@ async def auth_google_callback(request: Request):
     token_data = TokenData(
         access_token=credentials.token,
         refresh_token=credentials.refresh_token,
-        token_type=credentials.token_uri,
+        token_type="Bearer",
         expires_in=credentials.expiry,
         scope=" ".join(credentials.scopes),
     )
 
+    # Create a redirect response
     response = RedirectResponse(url="http://localhost:3000/mail-to-transaction-info")
-    response.set_cookie(key="token", value=token_data.access_token, httponly=True, secure=True)
+
+    # Set each token data separately in the cookie
+    response.set_cookie(key="access_token", value=token_data.access_token, secure=True)
+    response.set_cookie(key="refresh_token", value=token_data.refresh_token, secure=True)
+    response.set_cookie(key="token_type", value=token_data.token_type, secure=True)
+    response.set_cookie(key="expires_in", value=int(token_data.expires_in), secure=True)
+    response.set_cookie(key="scope", value=token_data.scope, secure=True)
+
     return response
 
-@app.get("/fetch-emails")
-async def fetch_emails(request: Request):
-    if not hasattr(request.state, 'credentials') or not request.state.credentials:
+@app.post("/refresh-token")
+async def refresh_token(refresh_token: str):
+    try:
+        # Refresh the token
+        credentials = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=os.environ["CLIENT_ID"],
+            client_secret=os.environ["CLIENT_SECRET"],
+        )
+        credentials.refresh(GoogleRequest())
+        # Return the new access token
+        return {
+            "access_token": credentials.token,
+            "expires_in": credentials.expiry,
+            "token_type": credentials.token_type,
+            "scope": " ".join(credentials.scopes),
+        }
+    except Exception as e:
+        print("Error refreshing token:", e)
+        raise HTTPException(status_code=500, detail="Failed to refresh token")
+
+@app.post("/fetch-emails")
+async def fetch_emails(token_data: dict):
+    if not token_data:
         raise HTTPException(status_code=401, detail="User not authenticated")
 
-    # Logging for debugging
-    print("Credentials received:", request.state.credentials)
+    if not all(key in token_data for key in ["accessToken", "refreshToken", "tokenType", "scope"]):
+        raise HTTPException(status_code=400, detail="Missing required token fields")
 
-    token_data = TokenData(**request.state.credentials)  # Make sure TokenData is properly defined
-
-    credentials = Credentials(
-        token=token_data.token,
-        refresh_token=token_data.refresh_token,
-        token_uri=token_data.token_uri,
-        client_id=token_data.client_id,
-        client_secret=token_data.client_secret,
-        scopes=token_data.scopes
-    )
-
-    # Verify the Gmail API service
     try:
+        credentials = Credentials(
+            token=token_data["accessToken"],
+            refresh_token=token_data["refreshToken"],
+            token_uri="https://oauth2.googleapis.com/token",
+            scopes=token_data["scope"].split(),
+        )
         service = build("gmail", "v1", credentials=credentials)
     except Exception as e:
-        print("Error building Gmail service:", e)
         raise HTTPException(status_code=500, detail="Failed to initialize Gmail service")
 
-    # Fetching emails
     try:
-        results = service.users().messages().list(userId="me", labelIds=["INBOX"], maxResults=5).execute()
+        results = service.users().messages().list(
+            userId="me",
+            labelIds=["INBOX"],
+            maxResults=20,
+            q="newer_than:1d -from:noreply@facebookmail.com -from:noreply@twitter.com"
+        ).execute()
         messages = results.get("messages", [])
 
         email_data = []
@@ -161,8 +193,11 @@ async def fetch_emails(request: Request):
 
         return JSONResponse(content={"emails": email_data})
     except Exception as e:
-        print("Error fetching emails:", e)
-        raise HTTPException(status_code=500, detail="Failed to fetch emails")
+        if isinstance(e, google.auth.exceptions.RefreshError):
+            raise HTTPException(status_code=401, detail="Token expired or invalid")
+        else:
+            raise HTTPException(status_code=500, detail="Failed to fetch emails")
+
 
 if __name__ == "__main__":
     client_id = os.environ["CLIENT_ID"]
