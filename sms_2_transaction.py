@@ -3,7 +3,6 @@ from typing import List
 from dotenv import load_dotenv
 import os
 from models import SMS
-from google_auth_oauthlib.flow import Flow
 load_dotenv()
 
 country_currency_codes = sorted([
@@ -173,22 +172,3 @@ def get_type(keyword : str, type):
         if keyword in keywords:
             return key
     return type
-
-client_id = os.environ["CLIENT_ID"]
-client_secret = os.environ["CLIENT_SECRET"]
-redirect_url = os.environ["REDIRECT_URI"]
-scope = os.environ["SCOPES"]
-
-flow = Flow.from_client_config(
-    {
-        "web": {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "redirect_uris": [redirect_url],
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    },
-    scopes=scope,
-    redirect_uri=redirect_url,
-)

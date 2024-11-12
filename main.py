@@ -9,7 +9,8 @@ from googleapiclient.discovery import build
 from typing import List
 import base64
 from models import Transaction, TokenData
-from sms_2_transaction import SMS, is_transactional, get_transaction_info, flow
+from sms_2_transaction import SMS, is_transactional, get_transaction_info
+from google_auth_oauthlib.flow import Flow
 
 
 html_file_path = os.path.abspath('pdf_format/index.html')
@@ -115,7 +116,9 @@ async def auth_google_callback(request: Request):
         scope=" ".join(credentials.scopes),
     )
 
-    return token_data
+    response = RedirectResponse(url="http://localhost:3000/mail-to-transaction-info")
+    response.set_cookie(key="token", value=token_data.access_token, httponly=True, secure=True)
+    return response
 
 @app.get("/fetch-emails")
 async def fetch_emails(request: Request):
@@ -162,4 +165,23 @@ async def fetch_emails(request: Request):
         raise HTTPException(status_code=500, detail="Failed to fetch emails")
 
 if __name__ == "__main__":
+    client_id = os.environ["CLIENT_ID"]
+    client_secret = os.environ["CLIENT_SECRET"]
+    redirect_url = os.environ["REDIRECT_URI"]
+    scope = [os.environ["SCOPES"]]
+
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "redirect_uris": [redirect_url],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=redirect_url,
+    )
+
     uvicorn.run(app, host="0.0.0.0", port=4001)
