@@ -1,5 +1,4 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/mail-to-transaction-info/page": "app/mail-to-transaction-info/page.js",
-  "/sms-to-transaction-info/page": "app/sms-to-transaction-info/page.js"
+  "/oauth/page": "app/oauth/page.js",
+  "/auth/callback/page": "app/auth/callback/page.js"
 }
