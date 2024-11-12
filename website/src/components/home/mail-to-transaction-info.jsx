@@ -49,15 +49,42 @@ export default function Mail_To_Transaction_Info() {
                     Login with Google
                 </button>
             ) : (
-                <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
+                <div className="w-full max-w-7xl bg-white p-6 rounded-lg shadow-lg border border-gray-300">
                     <h2 className="text-2xl font-semibold mb-4 text-stone-800">Recent Emails</h2>
                     {emails.length > 0 ? (
                         emails.map((email) => (
-                            <div key={email.id} className="border-b border-gray-200 py-4">
-                                <p className="text-gray-700 mb-4"><strong>Subject:</strong> {email.subject}</p>
-                                <p className="text-gray-700 mb-4"><strong>Sender:</strong> {email.sender}</p>
-                                <p className="text-gray-700 mb-4"><strong>Snippet:</strong> {email.snippet}</p>
-                                <p className="text-gray-700 mb-4"><strong>Body:</strong> {email.body}</p>
+                            <div key={email.id} className="border-b border-gray-200 py-4 break-words">
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="col-span-2 pr-4">
+                                        <p className="text-gray-700 mb-4"><strong>Subject:</strong> {email.subject}</p>
+                                        <p className="text-gray-700 mb-4"><strong>Sender:</strong> {email.sender}</p>
+                                        <p className="text-gray-700 mb-4"><strong>Snippet:</strong> {email.snippet}</p>
+                                        <p className="text-gray-700 mb-4"><strong>Body:</strong> {email.body}</p>
+                                    </div>
+                                    <div className="col-span-1 pl-4">
+                                        {typeof email.data.info === 'object' && email.data.info !== null ? (
+                                            <>
+                                                <p className="text-gray-700 mb-4 bg-green-200 text-center border-2 border-stone-200 rounded-md"><strong>Message:</strong> {email.data.message}</p>
+                                                <table className="min-w-full bg-white text-slate-800 border border-gray-200">
+                                                    <tbody>
+                                                        {Object.entries(email.data.info).map(([key, value]) => (
+                                                            <tr key={key} className='grid grid-cols-2 border border-stone-200'>
+                                                                <td className="font-semibold text-center py-2 border-stone-800">{key.charAt(0).toUpperCase() + key.slice(1)}:</td>
+                                                                <td className="text-center py-2">
+                                                                    <span className={`inline-block px-2 py-1 rounded-md ${value ? 'bg-green-200' : 'bg-red-200'}`}>
+                                                                        {value !== null && value !== "" ? value : 'N/A'}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </>
+                                        ) : (
+                                            <p className="text-gray-700 mb-4 bg-yellow-200 text-center border-2 border-stone-200 rounded-md"><strong>Message:</strong> {email.data.message}</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))
                     ) : (

@@ -10,6 +10,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/mail-to-transaction-info/page.js"
+    ],
+    "/sms-to-transaction-info/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/sms-to-transaction-info/page.js"
     ]
   }
 }

@@ -59,14 +59,19 @@ def get_transaction_info(message: str) -> bool:
     balance = None
     
     message_lower = message.lower()
+    currency_matches = []
+    keywords = message_lower.split(" ")
     for code in country_currency_codes:
-        if code.lower() in message_lower:
-            currency = code
-            break
+        if code.lower() in keywords:
+            currency_matches.append(code)
+    
+    if currency_matches:
+        currency = max(set(currency_matches), key=currency_matches.count)
     if currency == None:
         currency = 'USD'
     replacements = {
         "account": "ac",
+        "a/c": "ac",
         "no": "",
         "$": "",
         ",": "",
@@ -82,7 +87,6 @@ def get_transaction_info(message: str) -> bool:
     for old, new in replacements.items():
         message_lower = message_lower.replace(old, new)
     keywords = message_lower.split(" ")
-    print(keywords)
     serial_search = ['AC','balance', currency.lower(), 'date', 'time', 'bank', 'type']
     for search in serial_search:
         for i in range(len(keywords)):
@@ -97,7 +101,7 @@ def get_transaction_info(message: str) -> bool:
             elif search == 'balance' and keywords[i] == 'balance':
                 balance = get_balance(keywords, i, currency.lower(), balance)
             elif search == 'bank':
-                bank = next((b for b in banks.get(currency, []) if b.lower() in message_lower), None)
+                bank = next((b for b in banks.get(currency, []) if b.lower() in message_lower), bank)
             elif search == 'type':
                 type = get_type(keywords[i], type)
     return {
@@ -149,6 +153,8 @@ def get_balance(keywords: List[str], i: int, currency : str, balance) -> str:
             continue
     return balance
 
+
+
 def get_amount(keywords: List[str], i: int, amount) -> str:
     for j in range(i-3, i):
         try:
@@ -167,7 +173,6 @@ def get_amount(keywords: List[str], i: int, amount) -> str:
     return amount
 
 def get_type(keyword : str, type):
-    print(keyword)
     for key, keywords in types.items():
         if keyword in keywords:
             return key

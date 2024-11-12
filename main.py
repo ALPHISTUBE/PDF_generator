@@ -12,11 +12,12 @@ from google.auth.transport.requests import Request as GoogleRequest
 import google
 from typing import List
 import base64
-from models import Transaction, TokenData
-from sms_2_transaction import SMS, is_transactional, get_transaction_info
+from models import Transaction, TokenData, SMS
+from sms_2_transaction import is_transactional, get_transaction_info
 from google_auth_oauthlib.flow import Flow
 import ast
 import json
+from html2text import html2text
 
 
 html_file_path = os.path.abspath('pdf_format/index.html')
@@ -158,8 +159,7 @@ async def refresh_token(refresh_token: str):
         raise HTTPException(status_code=500, detail="Failed to refresh token")
 
 def strip_html_tags(html_text):
-    decoded_text = html.unescape(html_text)
-    return re.sub(r'<[^>]+>', '', decoded_text)
+    return html2text(html_text)
 
 @app.post("/fetch-emails")
 async def fetch_emails(token_data: dict):
@@ -225,7 +225,12 @@ async def fetch_emails(token_data: dict):
                 "subject": subject,
                 "sender": sender,
                 "snippet": msg["snippet"],
-                "body": body_text,  # Add the full body text
+                "body": body_text,
+                "data": {
+                    "status": "transaction" if is_transactional(body_text) else "non-transaction",
+                    "message": "This is a transactional email" if is_transactional(body_text) else "This is not a transactional email",
+                    "info": get_transaction_info(body_text) if is_transactional(body_text) else ""
+                }
             })
 
         return JSONResponse(content={"emails": email_data})
