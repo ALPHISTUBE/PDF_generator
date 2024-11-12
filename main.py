@@ -1,3 +1,5 @@
+import html
+import re
 import uvicorn
 import pdfkit
 import os
@@ -155,6 +157,10 @@ async def refresh_token(refresh_token: str):
         print("Error refreshing token:", e)
         raise HTTPException(status_code=500, detail="Failed to refresh token")
 
+def strip_html_tags(html_text):
+    decoded_text = html.unescape(html_text)
+    return re.sub(r'<[^>]+>', '', decoded_text)
+
 @app.post("/fetch-emails")
 async def fetch_emails(token_data: dict):
     if not token_data:
@@ -178,25 +184,58 @@ async def fetch_emails(token_data: dict):
         results = service.users().messages().list(
             userId="me",
             labelIds=["INBOX"],
-            maxResults=20,
-            q="newer_than:1d -from:noreply@facebookmail.com -from:noreply@twitter.com"
+            maxResults=5,
+            q="newer_than:1d -category:social -category:promotions"
         ).execute()
+        
         messages = results.get("messages", [])
-
         email_data = []
+
         for message in messages:
-            msg = service.users().messages().get(userId="me", id=message["id"]).execute()
+            # Fetch full message details for each email ID
+            msg = service.users().messages().get(userId="me", id=message["id"], format="full").execute()
+
+            # Extract headers and body
+            payload = msg.get("payload", {})
+            headers = payload.get("headers", [])
+            parts = payload.get("parts", [])
+
+            # Extract specific header fields
+            subject = next((header["value"] for header in headers if header["name"] == "Subject"), None)
+            sender = next((header["value"] for header in headers if header["name"] == "From"), None)
+
+            # Find the plain text or HTML part of the message body
+            body_html = ""
+            body_text = ""
+            for part in parts:
+                mime_type = part.get("mimeType")
+                body_data = part.get("body", {}).get("data")
+                
+                if body_data:
+                    decoded_data = base64.urlsafe_b64decode(body_data).decode("utf-8")
+                    if mime_type == "text/plain":
+                        body_text = decoded_data
+                    elif mime_type == "text/html":
+                        body_html = decoded_data
+                        body_text = strip_html_tags(decoded_data)
+            
             email_data.append({
                 "id": msg["id"],
+                "threadId": msg["threadId"],
+                "subject": subject,
+                "sender": sender,
                 "snippet": msg["snippet"],
+                "body": body_text,  # Add the full body text
             })
 
         return JSONResponse(content={"emails": email_data})
+
     except Exception as e:
         if isinstance(e, google.auth.exceptions.RefreshError):
             raise HTTPException(status_code=401, detail="Token expired or invalid")
         else:
             raise HTTPException(status_code=500, detail="Failed to fetch emails")
+
 
 
 if __name__ == "__main__":

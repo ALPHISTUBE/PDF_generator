@@ -1,1 +1,3 @@
-{}
+{
+  "/mail-to-transaction-info/page": "app/mail-to-transaction-info/page.js"
+}

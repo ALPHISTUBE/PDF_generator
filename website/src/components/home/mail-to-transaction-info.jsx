@@ -40,7 +40,7 @@ export default function Mail_To_Transaction_Info() {
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-            <h1 className="text-4xl font-bold mb-8">Email Dashboard</h1>
+            <h1 className="text-4xl font-bold mb-8 text-stone-800">Email Dashboard</h1>
             {!isAuthenticated ? (
                 <button
                     onClick={handleLogin}
@@ -50,11 +50,14 @@ export default function Mail_To_Transaction_Info() {
                 </button>
             ) : (
                 <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
-                    <h2 className="text-2xl font-semibold mb-4">Recent Emails</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-stone-800">Recent Emails</h2>
                     {emails.length > 0 ? (
                         emails.map((email) => (
                             <div key={email.id} className="border-b border-gray-200 py-4">
-                                <p className="text-gray-700">{email.snippet}</p>
+                                <p className="text-gray-700 mb-4"><strong>Subject:</strong> {email.subject}</p>
+                                <p className="text-gray-700 mb-4"><strong>Sender:</strong> {email.sender}</p>
+                                <p className="text-gray-700 mb-4"><strong>Snippet:</strong> {email.snippet}</p>
+                                <p className="text-gray-700 mb-4"><strong>Body:</strong> {email.body}</p>
                             </div>
                         ))
                     ) : (
