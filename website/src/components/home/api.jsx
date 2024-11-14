@@ -47,6 +47,31 @@ export async function fetchEmailAxios() {
     }
 }
   
+export const googleLogin = async (token, email, username) => {
+    if (!token || !email || !username) {
+        throw new Error("Token, email, and username are required.");
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8000/api/user/auth/google/login/?token=${token}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, username })
+        });
+
+        if (!response.ok) {
+            throw new Error('Invalid token or Google authentication failed.');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        throw new Error('Error during Google login');
+    }
+};
 
 const base64toBlob = (base64, mime) => {
     const byteCharacters = atob(base64);

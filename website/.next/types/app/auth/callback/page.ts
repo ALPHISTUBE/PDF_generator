@@ -1,4 +1,4 @@
-// File: E:\Alphi\Tutorial\Next\PDF_generator\website\src\app\auth\callback\page.jsx
+// File: /media/alphi/Alphi/MyProject/PDF_generator/website/src/app/auth/callback/page.jsx
 import * as entry from '../../../../../src/app/auth/callback/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

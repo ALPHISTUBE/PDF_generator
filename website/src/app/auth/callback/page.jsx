@@ -1,20 +1,19 @@
 "use client";
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const GoogleAuthCallback = () => {
+    const router = useRouter();
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const accessToken = params.get("access_token");
-
-            if (accessToken) {
-                localStorage.setItem("accessToken", accessToken);
-            }
-
-            console.log("Access token:", accessToken);
+            const email = params.get("email");
+            const username = params.get("username");
+            router.push(`/login?email=${email}&username=${username}&token=${accessToken}`);
         }
-    }, []);
+    }, [router]);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
